@@ -1,9 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Bell, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Search, Zap } from "lucide-react";
+import { Bell, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Search } from "lucide-react";
+import { brand } from "@/lib/site";
 import { navSections } from "@/components/admin/nav";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -65,9 +67,9 @@ function NavLinks({
 
 function Brand({ collapsed }: { collapsed: boolean }) {
   return (
-    <Link href="/dashboard" className={cn("flex h-14 items-center gap-2 px-4 font-semibold text-sidebar-accent-foreground", collapsed && "justify-center px-0")}>
-      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-        <Zap className="size-4" aria-hidden />
+    <Link href="/dashboard" className={cn("flex h-14 items-center gap-2 px-3 font-semibold text-sidebar-accent-foreground", collapsed && "justify-center px-0")}>
+      <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-white p-0.5">
+        <Image src={brand.logo} alt="" width={72} height={32} className="h-7 w-auto object-contain" />
       </span>
       {collapsed ? <span className="sr-only">MTUK Nagar Ride Admin</span> : <span>MTUK Nagar Ride Admin</span>}
     </Link>

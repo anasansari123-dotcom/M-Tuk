@@ -49,7 +49,7 @@ export function ContactForm() {
         <Label htmlFor="message">Message</Label>
         <Textarea id="message" name="message" required minLength={10} rows={5} className="min-h-32" />
       </div>
-      <Button type="submit" disabled={pending} className="h-11 rounded-2xl bg-[#00A84F] px-6 font-semibold hover:bg-[#059669]">
+      <Button type="submit" disabled={pending} className="h-12 w-full rounded-2xl bg-[#00A84F] px-6 font-semibold hover:bg-[#059669] sm:h-11 sm:w-auto">
         {pending ? <Loader2 className="animate-spin" aria-hidden /> : null}
         {pending ? "Sending…" : "Send message"}
       </Button>

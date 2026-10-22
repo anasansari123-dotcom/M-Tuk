@@ -6,7 +6,7 @@ import { z } from "zod";
 import { checkAdmin } from "@/lib/auth";
 import { describeError } from "@/lib/errors";
 import { supabaseConfigured } from "@/lib/env";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient, findAuthUserByEmail, serviceRoleConfigured } from "@/lib/supabase/server";
 
 export type ActionState = { ok: boolean; message: string } | null;
 
@@ -144,4 +144,184 @@ export async function reviewPartnerApplication(_state: ActionState, formData: Fo
   revalidatePath("/partners");
   revalidatePath("/drivers");
   return { ok: true, message: `Application marked ${parsed.data.status}.` };
+}
+
+function phoneDigits(value: string) {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length === 12 && digits.startsWith("91")) return digits.slice(2);
+  if (digits.length === 11 && digits.startsWith("0")) return digits.slice(1);
+  return digits;
+}
+
+function needsServiceRole() {
+  return {
+    ok: false,
+    message:
+      "SUPABASE_SERVICE_ROLE_KEY is missing. Local: paste the service_role key into .env.local and restart npm run dev. Vercel: add that exact name (no NEXT_PUBLIC_), then Redeploy.",
+  };
+}
+
+const createAdminSchema = z.object({
+  email: z.email("Enter a valid email address.").max(254),
+  password: z.string().min(12, "Use at least 12 characters.").max(200),
+  note: z.string().trim().max(200).optional(),
+});
+
+export async function createAdminAccount(_state: ActionState, formData: FormData): Promise<ActionState> {
+  const admin = await checkAdmin();
+  if (!admin) return { ok: false, message: "Your session has ended or you are not an admin. Sign in again." };
+  if (!serviceRoleConfigured()) return needsServiceRole();
+  const parsed = createAdminSchema.safeParse({
+    email: String(formData.get("email") ?? "").trim().toLowerCase(),
+    password: String(formData.get("password") ?? ""),
+    note: String(formData.get("note") ?? ""),
+  });
+  if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? "Check the form." };
+  if (parsed.data.email === admin.email.toLowerCase()) {
+    return { ok: false, message: "You already have admin access." };
+  }
+
+  const service = createServiceClient();
+  if (!service) return needsServiceRole();
+
+  let user = await findAuthUserByEmail(parsed.data.email);
+  if (user) {
+    const { error } = await service.auth.admin.updateUserById(user.id, {
+      password: parsed.data.password,
+      email_confirm: true,
+      user_metadata: { ...user.user_metadata, role: "admin" },
+    });
+    if (error) return { ok: false, message: "Could not update that login. Try a different email." };
+  } else {
+    const created = await service.auth.admin.createUser({
+      email: parsed.data.email,
+      password: parsed.data.password,
+      email_confirm: true,
+      user_metadata: { role: "admin" },
+    });
+    if (created.error || !created.data.user) {
+      return { ok: false, message: created.error?.message?.includes("already") ? "That email is already registered." : "Could not create the login." };
+    }
+    user = created.data.user;
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_grant_admin", {
+    p_user_id: user.id,
+    p_note: parsed.data.note ?? "",
+  });
+  if (error) return { ok: false, message: describeError(error, "Login was created but admin access was not granted.") };
+
+  revalidatePath("/admins");
+  return { ok: true, message: `${parsed.data.email} can now sign in at /login.` };
+}
+
+export async function revokeAdminAccess(_state: ActionState, formData: FormData): Promise<ActionState> {
+  const admin = await checkAdmin();
+  if (!admin) return { ok: false, message: "Your session has ended or you are not an admin. Sign in again." };
+  const parsed = z.object({ userId: z.uuid() }).safeParse({ userId: String(formData.get("userId") ?? "") });
+  if (!parsed.success) return { ok: false, message: "Choose an admin." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_revoke_admin", { p_user_id: parsed.data.userId });
+  if (error) return { ok: false, message: describeError(error, "Could not remove admin access.") };
+
+  revalidatePath("/admins");
+  return { ok: true, message: "Admin access removed. They can no longer open the desk." };
+}
+
+const createProviderSchema = z.object({
+  name: z.string().trim().min(2, "Enter the full name.").max(80),
+  phone: z
+    .string()
+    .transform(phoneDigits)
+    .refine((value) => /^[6-9]\d{9}$/.test(value), "Enter a valid 10-digit mobile number."),
+  email: z.email("Enter a valid email address.").max(254),
+  password: z.string().min(6, "Use at least 6 characters for the app password.").max(200),
+  vehicleNumber: z.string().trim().min(4, "Enter the vehicle registration number.").max(20),
+  vehicleModel: z.string().trim().min(2, "Enter the vehicle model.").max(80),
+  approveNow: z.boolean(),
+});
+
+export async function createProviderAccount(_state: ActionState, formData: FormData): Promise<ActionState> {
+  const admin = await checkAdmin();
+  if (!admin) return { ok: false, message: "Your session has ended or you are not an admin. Sign in again." };
+  if (!serviceRoleConfigured()) return needsServiceRole();
+  const parsed = createProviderSchema.safeParse({
+    name: String(formData.get("name") ?? ""),
+    phone: String(formData.get("phone") ?? ""),
+    email: String(formData.get("email") ?? "").trim().toLowerCase(),
+    password: String(formData.get("password") ?? ""),
+    vehicleNumber: String(formData.get("vehicleNumber") ?? ""),
+    vehicleModel: String(formData.get("vehicleModel") ?? ""),
+    approveNow: String(formData.get("approveNow") ?? "") === "1",
+  });
+  if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? "Check the form." };
+
+  const service = createServiceClient();
+  if (!service) return needsServiceRole();
+
+  const metadata = {
+    name: parsed.data.name,
+    phone: parsed.data.phone,
+    role: "driver",
+    vehicle_number: parsed.data.vehicleNumber.toUpperCase(),
+    vehicle_model: parsed.data.vehicleModel,
+  };
+
+  let user = await findAuthUserByEmail(parsed.data.email);
+  if (user) {
+    const role = user.user_metadata?.role;
+    if (role === "passenger") {
+      return { ok: false, message: "This email is already a passenger account. Use a different email." };
+    }
+    const { error } = await service.auth.admin.updateUserById(user.id, {
+      password: parsed.data.password,
+      email_confirm: true,
+      user_metadata: { ...user.user_metadata, ...metadata },
+    });
+    if (error) return { ok: false, message: "That email already has a login, and it could not be updated." };
+  } else {
+    const created = await service.auth.admin.createUser({
+      email: parsed.data.email,
+      password: parsed.data.password,
+      email_confirm: true,
+      user_metadata: metadata,
+    });
+    if (created.error || !created.data.user) {
+      return { ok: false, message: created.error?.message?.includes("already") ? "That email is already registered." : "Could not create the login." };
+    }
+    user = created.data.user;
+  }
+
+  const { error: profileError } = await service.from("providers").upsert(
+    {
+      id: user.id,
+      name: parsed.data.name,
+      phone: parsed.data.phone,
+      email: parsed.data.email,
+      vehicle_number: parsed.data.vehicleNumber.toUpperCase(),
+      vehicle_model: parsed.data.vehicleModel,
+    },
+    { onConflict: "id" },
+  );
+  if (profileError) return { ok: false, message: describeError(profileError, "Login was created but the provider profile was not saved.") };
+
+  if (parsed.data.approveNow) {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("admin_set_driver_status", {
+      p_driver_id: user.id,
+      p_status: "approved",
+      p_note: "Created and verified from the admin desk",
+    });
+    if (error && !error.message?.includes("already")) {
+      revalidatePath("/drivers");
+      revalidatePath(`/drivers/${user.id}`);
+      return { ok: false, message: "Provider saved, but verification failed. Open the driver page and approve them." };
+    }
+  }
+
+  revalidatePath("/drivers");
+  revalidatePath(`/drivers/${user.id}`);
+  redirect(`/drivers/${user.id}`);
 }

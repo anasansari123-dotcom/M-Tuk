@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Plus } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 import { EmptyState, FilterTabs, PageHeader, Pagination, TableCard, VerificationBadge } from "@/components/admin/blocks";
 import { Notice } from "@/components/admin/notice";
 import { SearchInput } from "@/components/admin/search-input";
@@ -25,6 +27,12 @@ export default async function DriversPage({ searchParams }: PageProps<"/drivers"
       <PageHeader
         title="Drivers"
         description="Service providers registered in the mobile app (public.providers). The pending queue shows the oldest request first."
+        actions={
+          <Link href="/drivers/new" className={buttonVariants()}>
+            <Plus aria-hidden />
+            Add service provider
+          </Link>
+        }
       />
       {result.error ? <Notice tone="error" className="mb-4">{result.error}</Notice> : null}
       <div className="mb-3">

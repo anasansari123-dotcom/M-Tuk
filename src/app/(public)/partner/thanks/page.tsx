@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function PartnerThanksPage() {
   return (
-    <main className="mx-auto max-w-xl px-4 py-24 text-center sm:px-6">
+    <main className="mx-auto max-w-xl px-4 py-12 text-center sm:px-6 sm:py-24">
       <span className="mx-auto grid size-16 place-items-center rounded-full bg-[#E7F8EE] text-[#00A84F]">
         <CheckCircle2 className="size-8" aria-hidden />
       </span>

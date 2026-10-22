@@ -24,25 +24,25 @@ const pillars = [
 
 export default function AboutPage() {
   return (
-    <main className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
+    <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-16">
       <p className="text-xs font-semibold tracking-[0.2em] text-[#00A84F] uppercase">About</p>
-      <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-[#042D58]">
+      <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-[#042D58] sm:text-4xl">
         The e-rickshaw layer for your nagar.
       </h1>
-      <p className="mt-4 text-lg leading-8 text-[#71869A]">{brand.description}</p>
+      <p className="mt-4 text-base leading-8 text-[#71869A] sm:text-lg">{brand.description}</p>
 
-      <div className="mt-12 space-y-6">
+      <div className="mt-8 space-y-4 sm:mt-12 sm:space-y-6">
         {pillars.map((item) => (
-          <article key={item.title} className="rounded-3xl bg-white p-7 shadow-[0_12px_40px_rgba(6,63,120,0.06)]">
-            <h2 className="text-xl font-bold text-[#042D58]">{item.title}</h2>
+          <article key={item.title} className="rounded-3xl bg-white p-5 shadow-[0_12px_40px_rgba(6,63,120,0.06)] sm:p-7">
+            <h2 className="text-lg font-bold text-[#042D58] sm:text-xl">{item.title}</h2>
             <p className="mt-3 leading-7 text-[#34516B]">{item.body}</p>
           </article>
         ))}
       </div>
 
-      <div className="mt-12 rounded-[28px] bg-[#042D58] p-8 text-white">
-        <h2 className="text-2xl font-extrabold">How the website talks to the app</h2>
-        <ol className="mt-6 space-y-4 text-white/80">
+      <div className="mt-8 rounded-[28px] bg-[#042D58] p-5 text-white sm:mt-12 sm:p-8">
+        <h2 className="text-xl font-extrabold sm:text-2xl">How the website talks to the app</h2>
+        <ol className="mt-6 space-y-4 text-sm text-white/80 sm:text-base">
           <li>
             <span className="font-semibold text-[#FFAA00]">1. Apply.</span> A partner submits profile and KYC here. That creates a pending application the admin desk can open.
           </li>
@@ -53,12 +53,12 @@ export default function AboutPage() {
             <span className="font-semibold text-[#FFAA00]">3. Drive.</span> The same email opens the driver side of the app. Only approved providers can accept a requested ride.
           </li>
         </ol>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link href="/partner" className="rounded-2xl bg-[#00A84F] px-5 py-2.5 text-sm font-semibold text-white">
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <Link href="/partner" className="inline-flex h-12 items-center justify-center rounded-2xl bg-[#00A84F] px-5 text-sm font-semibold text-white">
             Become a partner
           </Link>
-          <Link href="/founder" className="rounded-2xl border border-white/20 px-5 py-2.5 text-sm font-semibold">
-            Meet the founder
+          <Link href="/team" className="inline-flex h-12 items-center justify-center rounded-2xl border border-white/20 px-5 text-sm font-semibold">
+            Meet the team
           </Link>
         </div>
       </div>

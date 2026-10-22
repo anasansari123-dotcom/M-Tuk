@@ -4,6 +4,7 @@ import { HealthPill } from "@/components/admin/health";
 import { Notice } from "@/components/admin/notice";
 import { createClient } from "@/lib/supabase/server";
 import { env } from "@/lib/env";
+import { serviceRoleConfigured } from "@/lib/supabase/server";
 import { formatDateTime } from "@/lib/format";
 
 export const metadata: Metadata = { title: "System status" };
@@ -19,15 +20,17 @@ async function checkDatabase() {
     supabase.from("rides").select("id", { count: "exact", head: true }),
     supabase.from("admin_audit_log").select("id", { count: "exact", head: true }),
     supabase.rpc("admin_overview", { p_from: new Date().toISOString(), p_to: new Date().toISOString() }),
+    supabase.rpc("admin_list_admins"),
   ]);
   const ms = Math.round(performance.now() - started);
-  const names = ["Admin role function", "passengers table", "providers verification columns", "rides table", "Audit log table", "Reporting functions"];
+  const names = ["Admin role function", "passengers table", "providers verification columns", "rides table", "Audit log table", "Reporting functions", "Admin accounts functions"];
   return { ms, at: new Date().toISOString(), results: checks.map((check, index) => ({ name: names[index], ok: !check.error, code: check.error?.code ?? "" })) };
 }
 
 export default async function SystemStatusPage() {
   const db = await checkDatabase();
   const allOk = db.results.every((result) => result.ok);
+  const serviceRole = serviceRoleConfigured();
 
   return (
     <>
@@ -53,7 +56,7 @@ export default async function SystemStatusPage() {
                 { label: "NEXT_PUBLIC_API_URL", value: env.apiUrl ? "Set" : "Missing" },
                 { label: "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY", value: env.mapsKey ? "Set" : "Missing (live map disabled)" },
                 { label: "NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID", value: env.mapId ? "Set" : "Missing (demo map ID)" },
-                { label: "Service-role key", value: "Not used by the admin site" },
+                { label: "SUPABASE_SERVICE_ROLE_KEY", value: serviceRole ? "Set (server only — create admin/provider logins)" : "Missing (cannot create logins from the desk)" },
               ]}
             />
           </Section>

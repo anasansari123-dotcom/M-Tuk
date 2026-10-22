@@ -9,7 +9,7 @@ export function describeError(error: DbError, fallback = "Something went wrong. 
   const code = error.code ?? "";
   if (["22023", "55000", "P0002", "42501", "23505"].includes(code) && error.message) return error.message;
   if (code === "PGRST202" || code === "42883" || code === "PGRST205" || code === "42P01" || code === "42703") {
-    return "The admin database setup is incomplete. Run supabase/admin.sql in Supabase.";
+    return "The admin database setup is incomplete. Run supabase/admin.sql, then supabase/public.sql and supabase/accounts.sql in Supabase.";
   }
   console.error("Supabase error", code, error.message);
   return fallback;

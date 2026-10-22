@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { KeyValues, PageHeader, Section, Unsupported } from "@/components/admin/blocks";
 import { requireAdmin } from "@/lib/auth";
 import { env } from "@/lib/env";
@@ -37,6 +38,14 @@ export default async function SettingsPage() {
                 { label: "User ID", value: <span className="font-mono text-xs">{admin.id}</span> },
                 { label: "Role", value: "Administrator (public.admin_users)" },
                 { label: "Password", value: <span className="text-muted-foreground">Change it in Supabase Auth or with a password reset email</span> },
+                {
+                  label: "Team",
+                  value: (
+                    <Link href="/admins" className="text-primary hover:underline">
+                      Create or remove admins
+                    </Link>
+                  ),
+                },
               ]}
             />
           </Section>

@@ -31,7 +31,7 @@ function Field({
 }
 
 const fileClass =
-  "h-11 cursor-pointer text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-[#E7F8EE] file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-[#00A84F]";
+  "h-auto min-h-12 w-full cursor-pointer py-2 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-[#E7F8EE] file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-[#00A84F]";
 
 export function PartnerForm() {
   const [state, action, pending] = useActionState(submitPartnerApplication, null);

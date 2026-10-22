@@ -10,6 +10,7 @@ import {
   Map,
   ScrollText,
   Settings,
+  Shield,
   Users,
   Route,
 } from "lucide-react";
@@ -43,6 +44,7 @@ export const navSections = [
   {
     label: "System",
     items: [
+      { href: "/admins", label: "Admins", icon: Shield },
       { href: "/settings", label: "Settings", icon: Settings },
       { href: "/system-status", label: "System status", icon: Activity },
       { href: "/audit-logs", label: "Audit log", icon: ScrollText },

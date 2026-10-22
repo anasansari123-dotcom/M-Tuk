@@ -8,6 +8,7 @@ import {
   passengerColumns,
   providerColumns,
   rideColumns,
+  type AdminAccount,
   type AuditEntry,
   type ContactMessage,
   type Overview,
@@ -269,6 +270,12 @@ export async function listAudit(input: {
 }
 
 export { pageSize };
+
+export async function listAdmins(): Promise<Result<AdminAccount[]>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_list_admins");
+  return { data: (data as AdminAccount[] | null) ?? [], error: error ? describeError(error) : null };
+}
 
 // ---- Partner applications ---------------------------------------------------------------
 

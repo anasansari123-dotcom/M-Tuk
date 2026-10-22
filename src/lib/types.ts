@@ -101,6 +101,13 @@ export type PartnerApplication = {
 export const partnerColumns =
   "id, user_id, name, phone, email, city, vehicle_number, vehicle_model, license_number, message, license_path, rc_path, photo_path, id_path, status, note, created_at, reviewed_at, reviewed_by";
 
+export type AdminAccount = {
+  user_id: string;
+  email: string;
+  note: string;
+  created_at: string;
+};
+
 export type ContactMessage = {
   id: number;
   name: string;

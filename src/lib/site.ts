@@ -8,24 +8,26 @@ export const brand = {
   phone: "",
   hours: "6:00 AM – 11:00 PM · All days",
   city: "Your nagar, on demand",
+  logo: "/mtuk-logo.png",
 };
 
 export const nav = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
-  { href: "/founder", label: "Founder" },
+  { href: "/team", label: "Team" },
   { href: "/partner", label: "Become a partner" },
   { href: "/contact", label: "Contact" },
 ];
 
-export const founder = {
-  name: "Mohd Anas",
-  role: "Founder",
-  location: "India",
-  portrait: "MA",
+export const team = [
+  { name: "Mohd Anas", initials: "MA" },
+  { name: "Mukul Jain", initials: "MJ" },
+];
+
+export const story = {
   intro:
     "MTUK Nagar Ride started from a simple gap: passengers waiting on the roadside, and e-rickshaw drivers circling without a clear next trip.",
-  story: [
+  paragraphs: [
     "Nagar travel is short, frequent, and local. It should not feel like a black-box taxi app built for another city. Fares should be visible. Drivers should be known. The ride should stay in the neighbourhood it belongs to.",
     "We built one network for both sides. Passengers book in the MTUK Nagar Ride app and watch the trip live. Service providers apply here, submit documents, and go online only after the operations team verifies them. The website and the app share the same accounts, the same vehicles, and the same ride ledger.",
     "The aim is not a marketplace of strangers. It is a trusted nagar fleet — drivers who can earn on every verified trip, and families who can send someone to the market without guessing the fare.",

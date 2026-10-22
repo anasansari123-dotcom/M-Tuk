@@ -18,13 +18,13 @@ export function LoginForm({ next, notice }: { next: string; notice: string }) {
       <input type="hidden" name="next" value={next} />
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" autoComplete="username" required autoFocus className="h-10" />
+        <Input id="email" name="email" type="email" autoComplete="username" required autoFocus className="h-11" />
       </div>
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
-        <Input id="password" name="password" type="password" autoComplete="current-password" required className="h-10" />
+        <Input id="password" name="password" type="password" autoComplete="current-password" required className="h-11" />
       </div>
-      <Button type="submit" className="h-10 w-full" disabled={pending}>
+      <Button type="submit" className="h-12 w-full" disabled={pending}>
         {pending ? <Loader2 className="animate-spin" aria-hidden /> : null}
         {pending ? "Signing in…" : "Sign in"}
       </Button>
