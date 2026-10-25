@@ -13,7 +13,7 @@ export default function TeamPage() {
       <p className="text-xs font-semibold tracking-[0.2em] text-[#00A84F] uppercase">Team</p>
       <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-[#042D58] sm:text-4xl">{story.intro}</h1>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2">
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {team.map((person) => (
           <article key={person.name} className="flex items-center gap-4 rounded-3xl bg-white p-5 shadow-[0_12px_40px_rgba(6,63,120,0.06)] sm:p-6">
             <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-[#042D58] text-xl font-extrabold text-white">

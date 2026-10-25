@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Bell, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Search } from "lucide-react";
 import { brand } from "@/lib/site";
+import { LiveRefresh } from "@/components/admin/live-refresh";
 import { navSections } from "@/components/admin/nav";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -17,10 +18,12 @@ const collapsedKey = "mtuk-admin-sidebar-collapsed";
 function NavLinks({
   collapsed,
   onNavigate,
+  pendingDrivers,
   pendingPartners,
 }: {
   collapsed: boolean;
   onNavigate?: () => void;
+  pendingDrivers?: number | null;
   pendingPartners?: number | null;
 }) {
   const pathname = usePathname();
@@ -33,7 +36,7 @@ function NavLinks({
           )}
           {section.items.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(`${href}/`);
-            const badge = href === "/partners" ? pendingPartners : null;
+            const badge = href === "/partners" ? pendingPartners : href === "/drivers" ? pendingDrivers : null;
             return (
               <Link
                 key={href}
@@ -145,7 +148,7 @@ export function AdminShell({
         )}
       >
         <Brand collapsed={collapsed} />
-        <NavLinks collapsed={collapsed} pendingPartners={pendingPartners} />
+        <NavLinks collapsed={collapsed} pendingDrivers={pendingDrivers} pendingPartners={pendingPartners} />
         <div className="border-t border-sidebar-border p-3">
           <button
             type="button"
@@ -166,7 +169,12 @@ export function AdminShell({
         <SheetContent side="left" className="w-64 gap-0 border-sidebar-border bg-sidebar p-0 text-sidebar-foreground" showCloseButton={false}>
           <SheetTitle className="sr-only">Navigation</SheetTitle>
           <Brand collapsed={false} />
-          <NavLinks collapsed={false} onNavigate={() => setMobileOpen(false)} pendingPartners={pendingPartners} />
+          <NavLinks
+            collapsed={false}
+            onNavigate={() => setMobileOpen(false)}
+            pendingDrivers={pendingDrivers}
+            pendingPartners={pendingPartners}
+          />
         </SheetContent>
       </Sheet>
 
@@ -177,17 +185,12 @@ export function AdminShell({
           </Button>
           <GlobalSearch />
           <div className="ml-auto flex items-center gap-1 sm:gap-2">
+            <LiveRefresh />
             <Link
-              href="/partners?status=pending"
+              href={pendingPartners || !pendingDrivers ? "/partners?status=pending" : "/drivers?status=pending"}
               className="relative grid size-9 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-              aria-label={
-                pendingPartners
-                  ? `${pendingPartners} partner applications waiting`
-                  : pendingDrivers
-                    ? `${pendingDrivers} drivers waiting for verification`
-                    : "Verification queue"
-              }
-              title="Partner applications waiting for verification"
+              aria-label={`${pendingPartners ?? 0} partner applications and ${pendingDrivers ?? 0} drivers waiting for verification`}
+              title={`${pendingPartners ?? 0} partner applications · ${pendingDrivers ?? 0} drivers waiting for verification`}
             >
               <Bell className="size-4" aria-hidden />
               {(pendingPartners || pendingDrivers) ? (

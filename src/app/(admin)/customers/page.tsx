@@ -24,7 +24,7 @@ export default async function CustomersPage({ searchParams }: PageProps<"/custom
     <>
       <PageHeader
         title="Customers"
-        description="Passengers registered in the mobile app (public.passengers). A row is created the first time a passenger signs in."
+        description="Passengers registered in the mobile app (public.passengers). A row is created as soon as a passenger finishes sign-up."
       />
       {result.error ? <Notice tone="error" className="mb-4">{result.error}</Notice> : null}
       <TableCard

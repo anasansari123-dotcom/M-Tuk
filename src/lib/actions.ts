@@ -89,6 +89,8 @@ export async function setDriverStatus(_state: ActionState, formData: FormData): 
 
   revalidatePath(`/drivers/${parsed.data.driverId}`);
   revalidatePath("/drivers");
+  // Approving a driver also closes their pending website application (supabase/sync.sql).
+  revalidatePath("/partners");
   return { ok: true, message: `Driver marked ${parsed.data.status}.` };
 }
 

@@ -23,7 +23,12 @@ So even if the UI checks were bypassed, a non-admin token would get no rows and 
 
 ### 1. Apply the database migration (once)
 
-Open the Supabase SQL editor and run **`supabase/admin.sql`**, then **`supabase/public.sql`**. Both are idempotent and only *add*.
+Open the Supabase SQL editor and run **`supabase/admin.sql`**, then **`supabase/public.sql`**, then
+**`supabase/sync.sql`**. All are idempotent and only *add*.
+
+`sync.sql` creates the `passengers` / `providers` row as soon as a sign-up finishes (and backfills
+accounts that are missing one), closes a driver's pending website application when the driver is
+approved from the Drivers page, and enables Realtime on the tables the admin desk refreshes live.
 
 `admin.sql` adds:
 

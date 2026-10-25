@@ -47,7 +47,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
         <StatCard label="Searching for driver" value={o?.live_requested} icon={Clock} tone="amber" href="/rides?status=requested" />
         <StatCard label="Driver assigned" value={o ? o.live_accepted + o.live_arriving : null} hint={o ? `${o.live_arriving} at pickup` : undefined} icon={Navigation} tone="blue" href="/rides?status=accepted" />
         <StatCard label="In progress" value={o?.live_ongoing} icon={Route} tone="green" href="/rides?status=ongoing" />
-        <StatCard label="Pending verification" value={o?.drivers_pending} hint="Website applications are under Partners" icon={UserCheck} tone="amber" href="/partners?status=pending" />
+        <StatCard label="Pending verification" value={o?.drivers_pending} hint="Website applications are under Partners" icon={UserCheck} tone="amber" href="/drivers?status=pending" />
       </div>
 
       <h2 className="mb-3 text-sm font-medium text-muted-foreground">{range.label}</h2>

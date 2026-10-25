@@ -251,7 +251,7 @@ export async function recentDrivers(limit = 5): Promise<Result<Provider[]>> {
 
 // ---- Audit log ---------------------------------------------------------------------------
 
-export const auditActions = ["driver.status_changed", "ride.cancelled"] as const;
+export const auditActions = ["driver.status_changed", "partner.status_changed", "ride.cancelled", "admin.granted", "admin.revoked"] as const;
 
 export async function listAudit(input: {
   from: number;

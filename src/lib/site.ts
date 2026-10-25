@@ -22,6 +22,7 @@ export const nav = [
 export const team = [
   { name: "Mohd Anas", initials: "MA" },
   { name: "Mukul Jain", initials: "MJ" },
+  { name: "Prashant Tomar", initials: "PT" },
 ];
 
 export const story = {

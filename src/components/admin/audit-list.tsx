@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { formatDateTime, rideStatusLabel, verificationLabel } from "@/lib/format";
-import type { AuditEntry, RideStatus, VerificationStatus } from "@/lib/types";
+import { formatDateTime, partnerLabel, rideStatusLabel, verificationLabel } from "@/lib/format";
+import type { AuditEntry, PartnerStatus, RideStatus, VerificationStatus } from "@/lib/types";
 
 export function describeAudit(entry: AuditEntry) {
   const d = entry.details ?? {};
@@ -13,12 +13,27 @@ export function describeAudit(entry: AuditEntry) {
     const from = rideStatusLabel[d.from as RideStatus] ?? String(d.from ?? "");
     return { title: `Ride cancelled (was: ${from.toLowerCase()})`, note: typeof d.reason === "string" ? d.reason : "" };
   }
+  if (entry.action === "partner.status_changed") {
+    const from = partnerLabel[d.from as PartnerStatus] ?? String(d.from ?? "");
+    const to = partnerLabel[d.to as PartnerStatus] ?? String(d.to ?? "");
+    const who = typeof d.email === "string" && d.email ? ` (${d.email})` : "";
+    return { title: `Partner application ${from.toLowerCase()} → ${to.toLowerCase()}${who}`, note: typeof d.note === "string" ? d.note : "" };
+  }
+  if (entry.action === "admin.granted" || entry.action === "admin.revoked") {
+    const who = typeof d.email === "string" && d.email ? d.email : "an account";
+    return {
+      title: entry.action === "admin.granted" ? `Admin access given to ${who}` : `Admin access removed from ${who}`,
+      note: typeof d.note === "string" ? d.note : "",
+    };
+  }
   return { title: entry.action, note: "" };
 }
 
 export function targetHref(entry: AuditEntry) {
   if (entry.target_type === "driver") return `/drivers/${entry.target_id}`;
   if (entry.target_type === "ride") return `/rides/${entry.target_id}`;
+  if (entry.target_type === "partner_application") return `/partners/${entry.target_id}`;
+  if (entry.target_type === "admin") return "/admins";
   return null;
 }
 

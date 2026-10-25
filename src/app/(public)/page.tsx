@@ -125,7 +125,7 @@ export default function LandingPage() {
       <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
         <p className="text-xs font-semibold tracking-[0.2em] text-[#00A84F] uppercase">Team</p>
         <h2 className="mt-2 text-2xl font-extrabold text-[#042D58] sm:text-3xl">The people behind MTUK</h2>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {team.map((person) => (
             <div key={person.name} className="flex items-center gap-4 rounded-3xl bg-white p-5 shadow-[0_12px_40px_rgba(6,63,120,0.06)]">
               <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#042D58] text-lg font-extrabold text-white">
