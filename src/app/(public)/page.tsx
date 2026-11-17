@@ -123,20 +123,31 @@ export default function LandingPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-        <p className="text-xs font-semibold tracking-[0.2em] text-[#00A84F] uppercase">Team</p>
+        <p className="text-xs font-semibold tracking-[0.2em] text-[#00A84F] uppercase">Leadership</p>
         <h2 className="mt-2 text-2xl font-extrabold text-[#042D58] sm:text-3xl">The people behind MTUK</h2>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {team.map((person) => (
-            <div key={person.name} className="flex items-center gap-4 rounded-3xl bg-white p-5 shadow-[0_12px_40px_rgba(6,63,120,0.06)]">
-              <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#042D58] text-lg font-extrabold text-white">
-                {person.initials}
+            <Link
+              key={person.slug}
+              href={`/team#${person.slug}`}
+              className="flex items-center gap-4 rounded-3xl bg-white p-5 shadow-[0_12px_40px_rgba(6,63,120,0.06)] transition hover:shadow-[0_12px_40px_rgba(6,63,120,0.12)]"
+            >
+              <Image
+                src={person.photo}
+                alt={`Portrait of ${person.name}`}
+                width={64}
+                height={64}
+                className="size-16 shrink-0 rounded-2xl object-cover object-top"
+              />
+              <span className="min-w-0">
+                <span className="block text-lg font-bold text-[#042D58]">{person.name}</span>
+                <span className="block text-sm font-semibold text-[#B08A3E]">{person.title}</span>
               </span>
-              <p className="text-lg font-bold text-[#042D58]">{person.name}</p>
-            </div>
+            </Link>
           ))}
         </div>
         <Link href="/team" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#00A84F]">
-          More about us
+          View leadership profiles
           <ArrowRight className="size-4" aria-hidden />
         </Link>
       </section>

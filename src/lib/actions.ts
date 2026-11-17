@@ -16,8 +16,12 @@ const signInSchema = z.object({
   next: z.string().max(200).optional(),
 });
 
+// After sign-in the admin lands back on the website (or the page they came from),
+// still signed in, so they can browse the site and open the dashboard from the header.
 function safeNext(value: string | undefined) {
-  return value && value.startsWith("/") && !value.startsWith("//") && value !== "/login" ? value : "/dashboard";
+  return value && value.startsWith("/") && !value.startsWith("//") && !value.startsWith("/\\") && value !== "/login"
+    ? value
+    : "/";
 }
 
 export async function signIn(_state: ActionState, formData: FormData): Promise<ActionState> {
@@ -57,6 +61,14 @@ export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/login");
+}
+
+// Sign-out button in the public website header: stay on the website.
+export async function signOutToWebsite() {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  revalidatePath("/", "layout");
+  redirect("/");
 }
 
 const driverStatusSchema = z

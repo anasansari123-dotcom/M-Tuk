@@ -3,14 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { LayoutDashboard, LogOut, Menu, X } from "lucide-react";
 import { Logo } from "@/components/site/logo";
+import { signOutToWebsite } from "@/lib/actions";
 import { nav } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
-export function SiteHeader() {
+export function SiteHeader({ adminEmail }: { adminEmail: string | null }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const signedIn = adminEmail !== null;
+  // Come back to this same page after signing in.
+  const loginHref = pathname && pathname !== "/" ? `/login?next=${encodeURIComponent(pathname)}` : "/login";
 
   return (
     <header className="sticky top-0 z-40 border-b border-[#DCE7F0] bg-white/95 backdrop-blur-xl">
@@ -34,9 +38,31 @@ export function SiteHeader() {
           })}
         </nav>
         <div className="hidden items-center gap-2 lg:flex">
-          <Link href="/login" className="rounded-full px-3 py-1.5 text-sm text-[#71869A] hover:text-[#042D58]">
-            Admin
-          </Link>
+          {signedIn ? (
+            <>
+              <Link
+                href="/dashboard"
+                title={adminEmail || "Administrator"}
+                className="inline-flex items-center gap-1.5 rounded-full border border-[#DCE7F0] px-3 py-1.5 text-sm font-semibold text-[#042D58] hover:bg-[#F4F8FC]"
+              >
+                <LayoutDashboard className="size-4" aria-hidden />
+                Dashboard
+              </Link>
+              <form action={signOutToWebsite}>
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-[#71869A] hover:text-[#042D58]"
+                >
+                  <LogOut className="size-4" aria-hidden />
+                  Sign out
+                </button>
+              </form>
+            </>
+          ) : (
+            <Link href={loginHref} className="rounded-full px-3 py-1.5 text-sm text-[#71869A] hover:text-[#042D58]">
+              Admin
+            </Link>
+          )}
           <Link
             href="/partner"
             className="rounded-full bg-[#00A84F] px-4 py-2 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(0,168,79,0.28)] hover:bg-[#059669]"
@@ -68,9 +94,31 @@ export function SiteHeader() {
                 {item.label}
               </Link>
             ))}
-            <Link href="/login" onClick={() => setOpen(false)} className="rounded-xl px-3 py-3 text-base text-[#71869A]">
-              Admin sign in
-            </Link>
+            {signedIn ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 rounded-xl px-3 py-3 text-base font-semibold text-[#042D58] hover:bg-[#F4F8FC]"
+                >
+                  <LayoutDashboard className="size-5" aria-hidden />
+                  Admin dashboard
+                </Link>
+                <form action={signOutToWebsite}>
+                  <button
+                    type="submit"
+                    className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-left text-base text-[#71869A] hover:bg-[#F4F8FC]"
+                  >
+                    <LogOut className="size-5" aria-hidden />
+                    Sign out{adminEmail ? ` (${adminEmail})` : ""}
+                  </button>
+                </form>
+              </>
+            ) : (
+              <Link href={loginHref} onClick={() => setOpen(false)} className="rounded-xl px-3 py-3 text-base text-[#71869A]">
+                Admin sign in
+              </Link>
+            )}
             <Link
               href="/partner"
               onClick={() => setOpen(false)}

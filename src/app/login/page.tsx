@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { checkAdmin } from "@/lib/auth";
 import { param, type SearchParams } from "@/lib/params";
 import { supabaseConfigured } from "@/lib/env";
 import { brand } from "@/lib/site";
@@ -15,6 +17,12 @@ const notices: Record<string, string> = {
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const params = (await searchParams) as SearchParams;
+  const next = param(params, "next");
+
+  // Already signed in as admin: skip the form and go where they were heading.
+  if (supabaseConfigured && !param(params, "error") && (await checkAdmin().catch(() => null))) {
+    redirect(next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/\\") && next !== "/login" ? next : "/");
+  }
   const notice = notices[param(params, "error")] ?? (supabaseConfigured ? "" : "The admin site is not configured. Set the Supabase environment variables.");
 
   return (
@@ -40,7 +48,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
             <h2 className="text-2xl font-semibold tracking-tight">Sign in</h2>
             <p className="text-sm text-muted-foreground">Use your administrator email and password.</p>
           </div>
-          <LoginForm next={param(params, "next")} notice={notice} />
+          <LoginForm next={next} notice={notice} />
           <p className="text-sm text-muted-foreground">
             Looking for the public site?{" "}
             <Link href="/" className="font-medium text-primary hover:underline">

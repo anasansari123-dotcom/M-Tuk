@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Bell, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Search } from "lucide-react";
+import { Bell, Globe, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Search } from "lucide-react";
 import { brand } from "@/lib/site";
 import { LiveRefresh } from "@/components/admin/live-refresh";
 import { navSections } from "@/components/admin/nav";
@@ -186,6 +186,15 @@ export function AdminShell({
           <GlobalSearch />
           <div className="ml-auto flex items-center gap-1 sm:gap-2">
             <LiveRefresh />
+            <Link
+              href="/"
+              className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              title="Open the public website (you stay signed in)"
+            >
+              <Globe className="size-4" aria-hidden />
+              <span className="hidden sm:inline">View website</span>
+              <span className="sr-only sm:hidden">View website</span>
+            </Link>
             <Link
               href={pendingPartners || !pendingDrivers ? "/partners?status=pending" : "/drivers?status=pending"}
               className="relative grid size-9 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
