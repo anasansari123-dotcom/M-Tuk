@@ -21,6 +21,7 @@ import {
   type RideCounts,
   type RideStatus,
   type SignupPoint,
+  type TrafficOfficer,
   type TrendPoint,
   type VerificationStatus,
 } from "@/lib/types";
@@ -263,7 +264,7 @@ export async function recentDrivers(limit = 5): Promise<Result<Provider[]>> {
 
 // ---- Audit log ---------------------------------------------------------------------------
 
-export const auditActions = ["driver.status_changed", "partner.status_changed", "partner.message_sent", "ride.cancelled", "admin.granted", "admin.revoked"] as const;
+export const auditActions = ["driver.status_changed", "partner.status_changed", "partner.message_sent", "traffic.driver_viewed", "traffic.officer_granted", "traffic.officer_revoked", "ride.cancelled", "admin.granted", "admin.revoked"] as const;
 
 export async function listAudit(input: {
   from: number;
@@ -282,6 +283,12 @@ export async function listAudit(input: {
 }
 
 export { pageSize };
+
+export async function listTrafficOfficers(): Promise<Result<TrafficOfficer[]>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_list_traffic_officers");
+  return { data: (data as TrafficOfficer[] | null) ?? [], error: error ? describeError(error) : null };
+}
 
 export async function listAdmins(): Promise<Result<AdminAccount[]>> {
   const supabase = await createClient();

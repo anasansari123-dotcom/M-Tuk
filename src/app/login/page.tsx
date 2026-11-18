@@ -11,7 +11,7 @@ import { LoginForm } from "./login-form";
 export const metadata: Metadata = { title: "Admin sign in", robots: { index: false, follow: false } };
 
 const notices: Record<string, string> = {
-  forbidden: "That account does not have admin access. Sign in with an admin account.",
+  forbidden: "That account does not have access. Sign in with an admin or traffic police account.",
   setup: "Admin access is not set up yet. Run supabase/admin.sql in Supabase, then add your account to admin_users.",
 };
 

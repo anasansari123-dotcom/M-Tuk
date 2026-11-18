@@ -22,6 +22,17 @@ export function describeAudit(entry: AuditEntry) {
   if (entry.action === "partner.message_sent") {
     return { title: "Message sent to applicant", note: typeof d.message === "string" ? d.message : "" };
   }
+  if (entry.action === "traffic.driver_viewed") {
+    const vehicle = typeof d.vehicle_number === "string" ? d.vehicle_number : "";
+    return { title: `Traffic police viewed driver ${typeof d.name === "string" ? d.name : ""}${vehicle ? ` (${vehicle})` : ""}`, note: "" };
+  }
+  if (entry.action === "traffic.officer_granted" || entry.action === "traffic.officer_revoked") {
+    const who = typeof d.email === "string" && d.email ? d.email : "an account";
+    return {
+      title: entry.action === "traffic.officer_granted" ? `Traffic police access given to ${who}` : `Traffic police access removed from ${who}`,
+      note: [d.name, d.badge, d.station].filter((part) => typeof part === "string" && part).join(" · "),
+    };
+  }
   if (entry.action === "admin.granted" || entry.action === "admin.revoked") {
     const who = typeof d.email === "string" && d.email ? d.email : "an account";
     return {

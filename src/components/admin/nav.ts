@@ -11,6 +11,8 @@ import {
   ScrollText,
   Settings,
   Shield,
+  Siren,
+  TrafficCone,
   Users,
   Route,
 } from "lucide-react";
@@ -21,6 +23,7 @@ export const navSections = [
     items: [
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
       { href: "/live-map", label: "Live map", icon: Map },
+      { href: "/traffic", label: "Traffic map", icon: TrafficCone },
     ],
   },
   {
@@ -45,6 +48,7 @@ export const navSections = [
     label: "System",
     items: [
       { href: "/admins", label: "Admins", icon: Shield },
+      { href: "/traffic-officers", label: "Traffic police", icon: Siren },
       { href: "/settings", label: "Settings", icon: Settings },
       { href: "/system-status", label: "System status", icon: Activity },
       { href: "/audit-logs", label: "Audit log", icon: ScrollText },

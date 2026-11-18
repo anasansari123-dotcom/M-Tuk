@@ -43,6 +43,11 @@ export async function signIn(_state: ActionState, formData: FormData): Promise<A
   }
 
   const { data: isAdmin, error: roleError } = await supabase.rpc("is_admin");
+  if (!roleError && isAdmin !== true) {
+    // Traffic police accounts only ever see the traffic map.
+    const { data: isOfficer } = await supabase.rpc("is_traffic_officer");
+    if (isOfficer === true) redirect("/traffic");
+  }
   if (roleError || isAdmin !== true) {
     console.warn("Admin sign-in refused", roleError ? { code: roleError.code } : { reason: "not in admin_users" });
     await supabase.auth.signOut();
@@ -363,4 +368,70 @@ export async function createProviderAccount(_state: ActionState, formData: FormD
   revalidatePath("/drivers");
   revalidatePath(`/drivers/${user.id}`);
   redirect(`/drivers/${user.id}`);
+}
+
+// ---- Traffic police accounts ------------------------------------------------------------
+
+const trafficOfficerSchema = z.object({
+  name: z.string().trim().min(2, "Enter the officer's name.").max(80),
+  badgeNumber: z.string().trim().min(2, "Enter the badge or belt number.").max(40),
+  station: z.string().trim().min(2, "Enter the police station or traffic circle.").max(120),
+  email: z.email("Enter a valid email address.").max(254),
+  password: z.string().min(10, "Use at least 10 characters.").max(200),
+});
+
+export async function createTrafficOfficer(_state: ActionState, formData: FormData): Promise<ActionState> {
+  const admin = await checkAdmin();
+  if (!admin) return { ok: false, message: "Your session has ended or you are not an admin. Sign in again." };
+  if (!serviceRoleConfigured()) return needsServiceRole();
+  const parsed = trafficOfficerSchema.safeParse({
+    name: String(formData.get("name") ?? ""),
+    badgeNumber: String(formData.get("badgeNumber") ?? ""),
+    station: String(formData.get("station") ?? ""),
+    email: String(formData.get("email") ?? "").trim().toLowerCase(),
+    password: String(formData.get("password") ?? ""),
+  });
+  if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? "Check the form." };
+
+  const service = createServiceClient();
+  if (!service) return needsServiceRole();
+
+  const existing = await findAuthUserByEmail(parsed.data.email);
+  if (existing) {
+    // Never turn a driver, passenger or admin login into a police login by accident.
+    return { ok: false, message: "That email already has an MTUK login. Use the officer's own official email." };
+  }
+  const created = await service.auth.admin.createUser({
+    email: parsed.data.email,
+    password: parsed.data.password,
+    email_confirm: true,
+    user_metadata: { role: "traffic_police", name: parsed.data.name },
+  });
+  if (created.error || !created.data.user) return { ok: false, message: "Could not create the login." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_grant_traffic_officer", {
+    p_user_id: created.data.user.id,
+    p_name: parsed.data.name,
+    p_badge_number: parsed.data.badgeNumber,
+    p_station: parsed.data.station,
+  });
+  if (error) return { ok: false, message: describeError(error, "Login was created but traffic access was not granted.") };
+
+  revalidatePath("/traffic-officers");
+  return { ok: true, message: `${parsed.data.name} can now sign in at /login and open the traffic map.` };
+}
+
+export async function revokeTrafficOfficer(_state: ActionState, formData: FormData): Promise<ActionState> {
+  const admin = await checkAdmin();
+  if (!admin) return { ok: false, message: "Your session has ended or you are not an admin. Sign in again." };
+  const parsed = z.object({ userId: z.uuid() }).safeParse({ userId: String(formData.get("userId") ?? "") });
+  if (!parsed.success) return { ok: false, message: "Choose an officer." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_revoke_traffic_officer", { p_user_id: parsed.data.userId });
+  if (error) return { ok: false, message: describeError(error, "Could not remove access.") };
+
+  revalidatePath("/traffic-officers");
+  return { ok: true, message: "Access removed. They can no longer open the traffic map." };
 }

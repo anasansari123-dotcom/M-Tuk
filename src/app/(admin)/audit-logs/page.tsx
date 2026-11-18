@@ -32,6 +32,7 @@ export default async function AuditLogsPage({ searchParams }: PageProps<"/audit-
               { value: "driver.status_changed", label: "Driver verification" },
               { value: "partner.status_changed", label: "Partner applications" },
               { value: "partner.message_sent", label: "Partner messages" },
+              { value: "traffic.driver_viewed", label: "Traffic police lookups" },
               { value: "ride.cancelled", label: "Ride cancellations" },
               { value: "admin.granted", label: "Admins added" },
               { value: "admin.revoked", label: "Admins removed" },

@@ -179,3 +179,12 @@ export type Overview = {
 
 export type TrendPoint = { bucket: string; total: number; completed: number; cancelled: number };
 export type SignupPoint = { bucket: string; customers: number; drivers: number };
+
+export type TrafficOfficer = {
+  user_id: string;
+  email: string;
+  name: string;
+  badge_number: string;
+  station: string;
+  created_at: string;
+};
