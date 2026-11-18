@@ -21,6 +21,26 @@ export const nav = [
 
 export const company = "M-TUK Innovations";
 
+export const companyAbout = {
+  name: "M-TUK Innovations",
+  tagline: "Innovation That Moves India.",
+  paragraphs: [
+    "M-TUK Innovations is an emerging technology-driven venture committed to transforming local mobility, transportation, logistics, and digital services through innovative, affordable, and customer-centric solutions.",
+    "Our focus is on leveraging technology to connect customers with local transport operators, businesses, and service providers through smart digital platforms. We aim to simplify everyday transportation, improve service accessibility, support local entrepreneurs, and create new business and employment opportunities, particularly in Tier-2 and Tier-3 cities.",
+  ],
+  mission:
+    "To develop innovative, accessible, and technology-enabled solutions that simplify everyday mobility and digital services, empower local businesses and entrepreneurs, enhance customer convenience, and create sustainable livelihood opportunities across India.",
+  vision:
+    "To become a trusted innovation-driven venture that transforms local mobility and digital services across India, making technology accessible to every city and community.",
+  coreFocus: [
+    "Smart Local Mobility Solutions",
+    "Technology-Enabled Transportation",
+    "Hyperlocal Logistics and Delivery",
+    "Digital Platforms and Services",
+    "Local Entrepreneurship and Employment Generation",
+  ],
+};
+
 export type Leader = {
   slug: string;
   name: string;
@@ -138,12 +158,12 @@ export const partnerSteps = [
   {
     step: "01",
     title: "Apply on this website",
-    body: "Share your details, vehicle number and documents. This is the only place we collect partner KYC.",
+    body: "Share your details, Aadhaar, PAN, licence, RC and a live photo. This is the only place we collect partner KYC.",
   },
   {
     step: "02",
     title: "Admin verifies you",
-    body: "The operations team reviews your licence, RC and ID on the same dashboard that runs live rides.",
+    body: "The operations team reviews your Aadhaar, PAN, licence, RC and live photo on the same dashboard that runs live rides.",
   },
   {
     step: "03",

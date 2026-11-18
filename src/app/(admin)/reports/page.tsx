@@ -97,7 +97,7 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
               </div>
             )}
             <p className="mt-3 text-xs text-muted-foreground">
-              The app does not record who cancelled or why, except for admin cancellations (see the audit log).
+              Open a cancelled ride to see who cancelled it and the reason given. Rides cancelled before the reason feature have no reason.
             </p>
           </div>
         </Section>

@@ -13,6 +13,7 @@ import {
   type ContactMessage,
   type Overview,
   type PartnerApplication,
+  type PartnerMessage,
   type PartnerStatus,
   type Passenger,
   type Provider,
@@ -173,6 +174,17 @@ export async function getRide(id: string): Promise<Result<Ride | null>> {
   return { data: data as Ride | null, error: error ? describeError(error) : null };
 }
 
+// Why and by whom a ride was cancelled. Separate query so ride pages keep working even before
+// backend/sql/rides.sql has added the cancel_reason / cancelled_by columns.
+export async function getCancelInfo(id: string): Promise<{ reason: string; by: string } | null> {
+  if (!isUuid(id)) return null;
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("rides").select("cancel_reason, cancelled_by").eq("id", id).maybeSingle();
+  if (error || !data) return null;
+  const row = data as { cancel_reason: string | null; cancelled_by: string | null };
+  return { reason: row.cancel_reason ?? "", by: row.cancelled_by ?? "" };
+}
+
 // Capped: the live map shows what is happening now, not history.
 export async function listActiveRides(): Promise<Result<Ride[]>> {
   const supabase = await createClient();
@@ -251,7 +263,7 @@ export async function recentDrivers(limit = 5): Promise<Result<Provider[]>> {
 
 // ---- Audit log ---------------------------------------------------------------------------
 
-export const auditActions = ["driver.status_changed", "partner.status_changed", "ride.cancelled", "admin.granted", "admin.revoked"] as const;
+export const auditActions = ["driver.status_changed", "partner.status_changed", "partner.message_sent", "ride.cancelled", "admin.granted", "admin.revoked"] as const;
 
 export async function listAudit(input: {
   from: number;
@@ -330,6 +342,17 @@ export async function getPartnerForDriver(driver: { id: string; email: string; p
     .order("created_at", { ascending: false })
     .limit(1);
   return { data: (data?.[0] as PartnerApplication | undefined) ?? null, error: error ? describeError(error) : null };
+}
+
+export async function listPartnerMessages(applicationId: string): Promise<Result<PartnerMessage[]>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("partner_application_messages")
+    .select("id, application_id, body, admin_email, created_at")
+    .eq("application_id", applicationId)
+    .order("created_at", { ascending: false })
+    .limit(50);
+  return { data: (data as PartnerMessage[] | null) ?? [], error: error ? describeError(error) : null };
 }
 
 export async function signedDocumentUrl(path: string): Promise<string | null> {

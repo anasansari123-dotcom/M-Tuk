@@ -215,6 +215,11 @@ begin
 end;
 $$;
 
+-- Who cancelled a ride and why (also added by e-ride backend/sql/rides.sql; safe to run twice).
+alter table public.rides
+  add column if not exists cancel_reason text,
+  add column if not exists cancelled_by text;
+
 -- Admins may cancel rides that have not started. Ongoing rides are finished by the driver.
 create or replace function public.admin_cancel_ride(p_ride_id uuid, p_reason text)
 returns public.rides
@@ -243,7 +248,8 @@ begin
   end if;
 
   update public.rides
-  set status = 'cancelled', cancelled_at = now(), updated_at = now()
+  set status = 'cancelled', cancelled_at = now(), updated_at = now(),
+      cancel_reason = v_reason, cancelled_by = 'admin'
   where id = p_ride_id
   returning * into v_row;
 

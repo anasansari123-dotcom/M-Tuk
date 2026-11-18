@@ -27,8 +27,37 @@ const partnerSchema = z.object({
   vehicleNumber: z.string().trim().min(4, "Enter the vehicle registration number.").max(20),
   vehicleModel: z.string().trim().min(2, "Enter the vehicle model.").max(80),
   licenseNumber: z.string().trim().min(4, "Enter your driving licence number.").max(40),
+  licenseExpiry: z.iso.date("Enter the licence expiry date.").refine((value) => value >= today(), "Your driving licence has expired. Renew it before applying."),
+  dob: z.iso.date("Enter your date of birth.").refine((value) => value <= yearsAgo(18), "You must be at least 18 years old."),
+  address: z.string().trim().min(10, "Enter your full address.").max(300),
+  pincode: z
+    .string()
+    .transform((value) => value.replace(/\D/g, ""))
+    .refine((value) => /^[1-9]\d{5}$/.test(value), "Enter a valid 6-digit pincode."),
+  // Only the last 4 digits are stored. The full number is checked here and then dropped.
+  aadhaarNumber: z
+    .string()
+    .transform((value) => value.replace(/\D/g, ""))
+    .refine((value) => /^[2-9]\d{11}$/.test(value), "Enter a valid 12-digit Aadhaar number."),
+  panNumber: z
+    .string()
+    .transform((value) => value.replace(/\s/g, "").toUpperCase())
+    .refine((value) => /^[A-Z]{5}\d{4}[A-Z]$/.test(value), "Enter a valid PAN number (e.g. ABCDE1234F)."),
   message: z.string().trim().max(500).optional(),
+  consent: z.literal("on", "Confirm that your documents are genuine."),
 });
+
+function isoDate(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+function today() {
+  return isoDate(new Date());
+}
+function yearsAgo(years: number) {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() - years);
+  return isoDate(date);
+}
 
 const contactSchema = z.object({
   name: z.string().trim().min(2, "Enter your name.").max(80),
@@ -72,28 +101,48 @@ export async function submitPartnerApplication(_state: PublicState, formData: Fo
     vehicleNumber: String(formData.get("vehicleNumber") ?? ""),
     vehicleModel: String(formData.get("vehicleModel") ?? ""),
     licenseNumber: String(formData.get("licenseNumber") ?? ""),
+    licenseExpiry: String(formData.get("licenseExpiry") ?? ""),
+    dob: String(formData.get("dob") ?? ""),
+    address: String(formData.get("address") ?? ""),
+    pincode: String(formData.get("pincode") ?? ""),
+    aadhaarNumber: String(formData.get("aadhaarNumber") ?? ""),
+    panNumber: String(formData.get("panNumber") ?? ""),
     message: String(formData.get("message") ?? ""),
+    consent: formData.get("consent") ?? "",
   });
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? "Check the form." };
 
   const license = readFile(formData, "license", "driving licence");
   const rc = readFile(formData, "rc", "vehicle RC");
   const photo = readFile(formData, "photo", "vehicle photo", true);
-  const idDoc = readFile(formData, "idDoc", "Aadhaar or government ID");
+  const idDoc = readFile(formData, "idDoc", "Aadhaar card (front)");
+  const aadhaarBack = readFile(formData, "aadhaarBack", "Aadhaar card (back)");
+  const pan = readFile(formData, "pan", "PAN card");
+  const selfie = readFile(formData, "selfie", "live photo", true);
+  // Report the first missing document in the order the form shows them.
+  if (!idDoc.ok) return { ok: false, message: idDoc.error };
+  if (!aadhaarBack.ok) return { ok: false, message: aadhaarBack.error };
+  if (!pan.ok) return { ok: false, message: pan.error };
   if (!license.ok) return { ok: false, message: license.error };
   if (!rc.ok) return { ok: false, message: rc.error };
   if (!photo.ok) return { ok: false, message: photo.error };
-  if (!idDoc.ok) return { ok: false, message: idDoc.error };
+  if (!selfie.ok) return { ok: false, message: "Take a live photo with your camera." };
 
   const supabase = createAnonClient();
-  const { data: applicationId, error: insertError } = await supabase.rpc("submit_partner_application", {
+  const { data: applicationId, error: insertError } = await supabase.rpc("submit_partner_kyc", {
     p_name: parsed.data.name,
     p_phone: parsed.data.phone,
     p_email: parsed.data.email,
     p_city: parsed.data.city,
+    p_address: parsed.data.address,
+    p_pincode: parsed.data.pincode,
+    p_dob: parsed.data.dob,
+    p_aadhaar_last4: parsed.data.aadhaarNumber.slice(-4),
+    p_pan_number: parsed.data.panNumber,
     p_vehicle_number: parsed.data.vehicleNumber.toUpperCase(),
     p_vehicle_model: parsed.data.vehicleModel,
     p_license_number: parsed.data.licenseNumber.toUpperCase(),
+    p_license_expiry: parsed.data.licenseExpiry,
     p_message: parsed.data.message ?? "",
   });
   if (insertError || !applicationId) {
@@ -106,6 +155,9 @@ export async function submitPartnerApplication(_state: PublicState, formData: Fo
     { path: `${id}/rc.${extensionFor(rc.file)}`, file: rc.file },
     { path: `${id}/photo.${extensionFor(photo.file, true)}`, file: photo.file },
     { path: `${id}/id.${extensionFor(idDoc.file)}`, file: idDoc.file },
+    { path: `${id}/aadhaar_back.${extensionFor(aadhaarBack.file)}`, file: aadhaarBack.file },
+    { path: `${id}/pan.${extensionFor(pan.file)}`, file: pan.file },
+    { path: `${id}/selfie.${extensionFor(selfie.file, true)}`, file: selfie.file },
   ];
 
   for (const item of uploads) {
@@ -122,12 +174,15 @@ export async function submitPartnerApplication(_state: PublicState, formData: Fo
     }
   }
 
-  const { error: attachError } = await supabase.rpc("attach_partner_documents", {
+  const { error: attachError } = await supabase.rpc("attach_partner_kyc_documents", {
     p_id: id,
     p_license_path: uploads[0].path,
     p_rc_path: uploads[1].path,
     p_photo_path: uploads[2].path,
     p_id_path: uploads[3].path,
+    p_aadhaar_back_path: uploads[4].path,
+    p_pan_path: uploads[5].path,
+    p_selfie_path: uploads[6].path,
   });
   if (attachError) return { ok: false, message: describeError(attachError, "Could not attach your documents.") };
 

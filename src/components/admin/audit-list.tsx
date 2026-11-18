@@ -19,6 +19,9 @@ export function describeAudit(entry: AuditEntry) {
     const who = typeof d.email === "string" && d.email ? ` (${d.email})` : "";
     return { title: `Partner application ${from.toLowerCase()} → ${to.toLowerCase()}${who}`, note: typeof d.note === "string" ? d.note : "" };
   }
+  if (entry.action === "partner.message_sent") {
+    return { title: "Message sent to applicant", note: typeof d.message === "string" ? d.message : "" };
+  }
   if (entry.action === "admin.granted" || entry.action === "admin.revoked") {
     const who = typeof d.email === "string" && d.email ? d.email : "an account";
     return {

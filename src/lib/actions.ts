@@ -160,6 +160,31 @@ export async function reviewPartnerApplication(_state: ActionState, formData: Fo
   return { ok: true, message: `Application marked ${parsed.data.status}.` };
 }
 
+const partnerMessageSchema = z.object({
+  applicationId: z.uuid(),
+  body: z.string().trim().min(2, "Write a message first.").max(1000, "Keep the message under 1000 characters."),
+});
+
+export async function sendPartnerMessage(_state: ActionState, formData: FormData): Promise<ActionState> {
+  const admin = await checkAdmin();
+  if (!admin) return { ok: false, message: "Your session has ended or you are not an admin. Sign in again." };
+  const parsed = partnerMessageSchema.safeParse({
+    applicationId: formData.get("applicationId"),
+    body: String(formData.get("body") ?? ""),
+  });
+  if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? "Check the message." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_send_partner_message", {
+    p_application_id: parsed.data.applicationId,
+    p_body: parsed.data.body,
+  });
+  if (error) return { ok: false, message: describeError(error, "Could not send the message.") };
+
+  revalidatePath(`/partners/${parsed.data.applicationId}`);
+  return { ok: true, message: "Message sent. The applicant sees it in the app." };
+}
+
 function phoneDigits(value: string) {
   const digits = value.replace(/\D/g, "");
   if (digits.length === 12 && digits.startsWith("91")) return digits.slice(2);

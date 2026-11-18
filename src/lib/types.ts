@@ -91,6 +91,15 @@ export type PartnerApplication = {
   rc_path: string;
   photo_path: string;
   id_path: string;
+  aadhaar_back_path: string;
+  pan_path: string;
+  selfie_path: string;
+  dob: string | null;
+  address: string;
+  pincode: string;
+  aadhaar_last4: string;
+  pan_number: string;
+  license_expiry: string | null;
   status: PartnerStatus;
   note: string;
   created_at: string;
@@ -99,7 +108,15 @@ export type PartnerApplication = {
 };
 
 export const partnerColumns =
-  "id, user_id, name, phone, email, city, vehicle_number, vehicle_model, license_number, message, license_path, rc_path, photo_path, id_path, status, note, created_at, reviewed_at, reviewed_by";
+  "id, user_id, name, phone, email, city, vehicle_number, vehicle_model, license_number, message, license_path, rc_path, photo_path, id_path, aadhaar_back_path, pan_path, selfie_path, dob, address, pincode, aadhaar_last4, pan_number, license_expiry, status, note, created_at, reviewed_at, reviewed_by";
+
+export type PartnerMessage = {
+  id: number;
+  application_id: string;
+  body: string;
+  admin_email: string;
+  created_at: string;
+};
 
 export type AdminAccount = {
   user_id: string;

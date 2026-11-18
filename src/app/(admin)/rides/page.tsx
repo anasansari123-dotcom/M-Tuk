@@ -54,8 +54,8 @@ export default async function RidesPage({ searchParams }: PageProps<"/rides">) {
         )}
       </TableCard>
       <p className="mt-3 text-xs text-muted-foreground">
-        Fares are the server-side quote saved at booking. The system has no separate final fare, payment status or cancellation reason
-        for passenger cancellations.
+        Fares are the server-side quote saved at booking. The system has no separate final fare or payment status.
+        Open a cancelled ride to see who cancelled it and why.
       </p>
     </>
   );

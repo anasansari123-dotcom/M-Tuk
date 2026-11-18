@@ -5,7 +5,7 @@ import { AuditList } from "@/components/admin/audit-list";
 import { KeyValues, PageHeader, RideStatusBadge, Section } from "@/components/admin/blocks";
 import { CancelRide } from "@/components/admin/cancel-ride";
 import { Notice } from "@/components/admin/notice";
-import { getRide, listAudit } from "@/lib/data";
+import { getCancelInfo, getRide, listAudit } from "@/lib/data";
 import { formatDateTime, formatKm, formatRupees, shortId, timeAgo } from "@/lib/format";
 import { adminCancellableStatuses } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -27,7 +27,11 @@ export default async function RidePage({ params }: PageProps<"/rides/[id]">) {
   if (ride.error) return <Notice tone="error">{ride.error}</Notice>;
   if (!ride.data) notFound();
   const r = ride.data;
-  const audit = await listAudit({ from: 0, to: 19, targetType: "ride", targetId: r.id });
+  const [audit, cancelInfo] = await Promise.all([
+    listAudit({ from: 0, to: 19, targetType: "ride", targetId: r.id }),
+    r.status === "cancelled" ? getCancelInfo(r.id) : Promise.resolve(null),
+  ]);
+  const cancelledBy = { passenger: "Passenger", driver: "Driver", admin: "Admin" }[cancelInfo?.by ?? ""] ?? "";
 
   const timeline = [
     { label: "Booked", at: r.created_at },
@@ -51,6 +55,15 @@ export default async function RidePage({ params }: PageProps<"/rides/[id]">) {
         <Notice tone="warning" className="mb-6" title={`No driver has accepted for ${unassignedMinutes} minutes`}>
           Requests are shown to every driver who has the app open and online. Check how many approved drivers are active, or cancel the
           ride with a reason so the passenger is not left waiting.
+        </Notice>
+      ) : null}
+      {r.status === "cancelled" ? (
+        <Notice tone="warning" className="mb-6" title={cancelledBy ? `Cancelled by ${cancelledBy.toLowerCase()}` : "Ride cancelled"}>
+          {cancelInfo?.reason ? (
+            <>Reason: <span className="font-medium">{cancelInfo.reason}</span></>
+          ) : (
+            <span className="text-muted-foreground">No reason was recorded for this cancellation.</span>
+          )}
         </Notice>
       ) : null}
       <div className="grid gap-6 xl:grid-cols-3">
