@@ -14,6 +14,11 @@ import { cn } from "@/lib/utils";
 
 // Delhi, the same default the backend uses for place search.
 const defaultCenter = { lat: 28.6139, lng: 77.209 };
+// APIProvider re-runs its loader whenever `libraries` or `onError` change identity. Its default
+// `libraries = []` is a new array on every render, so pass a constant to stop map reload loops.
+const MAP_LIBRARIES: string[] = [];
+const MAP_ERROR =
+  "Google Maps failed to load. Check that billing is enabled for the browser key's Google Cloud project and that the key allows this website.";
 
 const pinColor: Record<RideStatus, string> = {
   requested: "#d97706",
@@ -47,6 +52,8 @@ export function LiveMap({ initialRides, initialError }: { initialRides: Ride[]; 
   const [lastSync, setLastSync] = useState(() => new Date());
   const [live, setLive] = useState<"connecting" | "live" | "offline">("connecting");
   const [, setTick] = useState(0);
+  const [mapError, setMapError] = useState<string | null>(null);
+  const onMapError = useCallback(() => setMapError(MAP_ERROR), []);
 
   const refetch = useCallback(async () => {
     const { data, error: fetchError } = await getBrowserClient()
@@ -110,9 +117,10 @@ export function LiveMap({ initialRides, initialError }: { initialRides: Ride[]; 
           </span>
         </div>
         {error ? <Notice tone="error">{error}</Notice> : null}
+        {mapError ? <Notice tone="error">{mapError}</Notice> : null}
         <div className="relative h-[60vh] min-h-96 overflow-hidden rounded-xl border bg-muted">
           {env.mapsKey ? (
-            <APIProvider apiKey={env.mapsKey} onError={() => setError("Google Maps failed to load. Check the browser key and its website restrictions.")}>
+            <APIProvider apiKey={env.mapsKey} libraries={MAP_LIBRARIES} onError={onMapError}>
               <Map
                 mapId={env.mapId || "DEMO_MAP_ID"}
                 defaultCenter={defaultCenter}
